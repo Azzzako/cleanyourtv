@@ -28,6 +28,7 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
     private float shaderTop = Float.NaN, shaderBottom = Float.NaN;
     /** setColors was called: the skin's flat band wins over the light glass gradient. */
     private boolean skinned;
+    private boolean bandVisible = true;
 
     /**
      * @param translucent the cinematic shelf's band: the artwork and the glow show through it.
@@ -44,6 +45,11 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
         edge.setStyle(Paint.Style.STROKE);
         edge.setStrokeWidth(density);
         edge.setColor(lightGlass ? 0x38FFFFFF : translucent ? 0x26FFFFFF : 0x1FFFFFFF);
+    }
+
+    /** false: no band at all behind the dock (dock_fan), only the offsets that keep the row in place. */
+    void setBandVisible(boolean visible) {
+        bandVisible = visible;
     }
 
     /** The hacker skin's band and edge (skin_dock_band, skin_dock_edge), in place of the colours set above. */
@@ -66,6 +72,7 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
 
     @Override
     public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+        if (!bandVisible) return;
         boolean any = false;
         for (int i = 0; i < parent.getChildCount(); i++) {
             View child = parent.getChildAt(i);

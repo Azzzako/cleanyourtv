@@ -209,6 +209,9 @@
          shelf above it. false makes the dock apps simply the first tiles of one plain grid (still in dock_apps
          order, no empty slots), with names under every tile and the glow behind every focused tile. -->
     <bool name="dock_row">true</bool>
+    <!-- With dock_row: the dock as a hand of cards (DockFan) with no band behind it: overlapping, fanned around the
+         middle; the focused card rises straight, larger and in front with an accent ring, the others shaded. -->
+    <bool name="dock_fan">true</bool>
     <!-- The dock band as light frosted glass, like the Inputs, Wi-Fi and Settings pills, so a sky or wallpaper shows
          through it. false (the default) keeps the solid near-black band, or the cinematic shelf's dark glass. Can
          also be set with "dock_glass": true in a theme's config.json. -->

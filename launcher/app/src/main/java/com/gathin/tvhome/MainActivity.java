@@ -135,6 +135,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private View hero;
     /** Player card for now_playing_package beside the top shelf (NowPlaying); shown and hidden with the shelf. */
     private NowPlaying nowPlaying;
+    /** dock_fan in config.xml: the dock as a fanned hand of cards (DockFan); null for the plain dock row. */
+    private DockFan dockFan;
     /** hacker_skin in skin.xml: skin_accent on the glass, glow, dock edge and greeting, a blinking cursor after the
      *  shelf's name and CRT lines over Home. The drawables and the font follow skin.xml on their own. */
     private boolean hackerSkin;
@@ -526,6 +528,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             @Override
             public void onChildViewAttachedToWindow(@NonNull View v) {
                 v.setAlpha(tileAlpha(grid.getChildAdapterPosition(v)));
+                if (dockFan != null) dockFan.onAttached(v);   // a recycled dock card goes back to plain in the grid
             }
 
             @Override
@@ -535,6 +538,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (dockRow) {
             DockDecoration dock = new DockDecoration(COLUMNS, density, cinematic, cfg.alwaysShowNames, cfg.dockOpacity, cfg.dockGlass);
             if (hackerSkin) dock.setColors(getColor(R.color.skin_dock_band), getColor(R.color.skin_dock_edge));
+            if (getResources().getBoolean(R.bool.dock_fan)) {
+                dock.setBandVisible(false);
+                dockFan = new DockFan(grid, COLUMNS, density, hackerSkin ? skinAccent : 0xFFFFFFFF,
+                        animations && !reducedMotion, () -> adapter.dockFilled());
+                // After every layout pass of the grid (tiles bound, sizes known), lay the hand out again; transforms
+                // only, so this causes no layout of its own.
+                grid.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> grid.post(dockFan::apply));
+            }
             grid.addItemDecoration(dock);
         }
         // Reduced motion: the tiles are simply there, with no entrance (reloadApps skips it there too).
@@ -692,6 +703,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         getWindow().getDecorView().getViewTreeObserver().addOnGlobalFocusChangeListener((oldF, newF) -> {
             boolean onTile = newF != null && newF.getId() == R.id.card;
             if (!onTile) hideGlass();
+            if (dockFan != null) {
+                View item = onTile ? (View) newF.getParent() : null;
+                dockFan.setFocused(item != null && item.getParent() == grid ? grid.getChildAdapterPosition(item) : -1);
+            }
         });
 
         packageFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
@@ -1454,7 +1469,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             glassAccent = accent;
             glass.setAccent(accent);
         }
-        if (!glassShown) {
+        // The hand of cards marks its focused card itself (DockFan): no glass over the dock.
+        boolean fanCard = dockFan != null && dockRow && position < COLUMNS;
+        if (fanCard) {
+            hideGlass();
+        } else if (!glassShown) {
             springX.cancel();
             springY.cancel();
             glass.setTranslationX(x);
@@ -1501,6 +1520,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         RecyclerView.ViewHolder vh = grid.findViewHolderForAdapterPosition(pos);
         View card = vh == null ? null : vh.itemView.findViewById(R.id.card);
         if (card == null || card.getWidth() <= 0 || !card.isFocused()) return;
+        if (dockFan != null && dockRow && pos < COLUMNS) return;   // no glass over the hand of cards
         float pad = 6f * density;
         float scale = adapter.focusScale();
         int w = (int) (card.getWidth() * scale + 2 * pad);

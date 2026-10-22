@@ -18,6 +18,9 @@ TV: TCL `G08`, modelo "Smart TV Pro", producto `G08_4K_GB`, Android 14 (SDK 34),
 - **Cinta de Spotify** tipo anuncio en la barra de arriba (ver "Reproductor de Spotify en Inicio").
 - **Estilo hacker** (HackerRank) en todo el launcher: ver "Estilo del launcher".
 - **Íconos redondeados** de cada app en lugar de banners: ver "Íconos de las apps".
+- **Dock como mano de cartas**: sin banda gris, los 7 íconos encimados en abanico; la app enfocada sube, se endereza
+  y queda al frente con borde verde, las demás se oscurecen. `dock_fan` en `config.xml` (`false` = dock normal);
+  separación e inclinación en `SPREAD`, `TILT`, `ARC_DP` y `LIFT_DP` de `DockFan.java`.
 - **DNS privado con bloqueo de anuncios** (AdGuard DNS). No bloquea los anuncios de YouTube.
 - **Se dejaron activos a propósito:** Chromecast, AirPlay, actualizaciones de TCL (`com.tcl.ttvs`),
   TCL Channel, el panel de entradas, el emparejamiento del control, el teclado, Play Store y Play Services.
