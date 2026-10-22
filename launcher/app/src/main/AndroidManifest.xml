@@ -187,5 +187,17 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/input_key_service" />
         </service>
+
+        <!-- Notification access, only so NowPlaying may read the media app's session for the player card. Granted with
+             `cmd notification allow_listener com.gathin.tvhome/com.gathin.tvhome.MediaListener`; see MediaListener. -->
+        <service
+            android:name=".MediaListener"
+            android:exported="true"
+            android:label="@string/now_playing_listener"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>

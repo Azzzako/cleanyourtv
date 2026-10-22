@@ -18,9 +18,12 @@
     <!-- Apps pinned to the dock row at the bottom, in this order. Missing apps are skipped. -->
     <string-array name="dock_apps">
         <item>com.netflix.ninja</item>
+        <item>com.wbd.stream</item>
+        <item>com.disney.disneyplus</item>
+        <item>com.calientetv</item>
         <item>com.amazon.amazonvideo.livingroom</item>
         <item>com.google.android.youtube.tv</item>
-        <item>in.startv.hotstar</item>
+        <item>com.stremio.one</item>
     </string-array>
     <!-- With fewer dock_apps than columns (or a dock app that is not installed), the free dock slots take
          the first grid apps, so the dock never shows a gap. false leaves them empty (#162); a theme can
@@ -29,12 +32,13 @@
 
     <!-- Apps never shown as tiles (e.g. the Live TV app, which the Inputs menu already covers). -->
     <string-array name="hidden_apps">
-        <item>com.mediatek.wwtv.tvcenter</item>
-        <item>com.mitv.gallery</item>
+        <item>com.tcl.tv</item>
+        <item>com.tcl.suspension</item>
+        <item>com.tcl.partnercustomizer</item>
     </string-array>
 
     <!-- The TV's Live TV / tuner app, offered at the end of the Inputs menu. Leave empty to omit. -->
-    <string name="live_tv_package" translatable="false">com.mediatek.wwtv.tvcenter</string>
+    <string name="live_tv_package" translatable="false">com.tcl.tv</string>
 
     <!-- Open the Live TV app above the first time Home comes up after the TV is switched on, for sets that are
          mostly used for broadcast TV. Once per boot: Home after that stays Home. Can also be set with
@@ -61,6 +65,16 @@
 
     <!-- A tile's name instead of the app's own: "package=Name". It also shows above the dock. -->
     <string-array name="app_labels">
+    </string-array>
+    <!-- Square, rounded tiles with each app's icon (the Netflix "N", the YouTube play button) instead of its 16:9
+         banner with the wordmark. Icons are drawn full bleed (IconArt); app_icons below swaps in a bundled one. -->
+    <bool name="icon_tiles">true</bool>
+    <!-- With icon_tiles: an icon's share of its cell, in percent; the rest is space between icons. 100 fills the cell. -->
+    <integer name="icon_tile_percent">75</integer>
+    <!-- With icon_tiles: "package=drawable", an icon_* drawable bundled with the launcher (res/drawable) shown
+         instead of the app's own icon, for apps whose TV icon is a wordmark. -->
+    <string-array name="app_icons" translatable="false">
+        <item>com.netflix.ninja=icon_netflix</item>
     </string-array>
     <!-- A tile's artwork instead of the app's banner: "package=drawable", a banner_* drawable bundled with the
          launcher (res/drawable). banner_tv is a magenta field with the Live TV glyph. -->
@@ -120,6 +134,9 @@
          settings panel) on scancode 240 (KEY_UNKNOWN), the scancode several TCL buttons share. Find the keycode
          with `tools/tv.py 'logcat -v time -s InputReader:D'` while pressing the button. Leave empty to omit. -->
     <integer-array name="settings_key_keycodes">
+        <!-- TCL G08 remote's gear button: KEYCODE_NOTIFICATION on scancode 561. Opens Settings on Home without
+             HomeKeyService (which would cost held-volume repeat on this set). -->
+        <item>83</item>
     </integer-array>
     <!-- What those Settings buttons open: false, the TV's Settings; true, a small glass panel at the top right
          with TV settings, Display, Network, Apps (re-enable an app) and Launcher settings, over whatever is on screen.
@@ -155,6 +172,15 @@
          still opens on a tap; "hold:scan:490:..." works for scancodes. A key with only a hold entry does nothing
          on a tap. A listed app that is not installed leaves the button doing nothing. Leave empty to omit. -->
     <string-array name="app_keys" translatable="false">
+        <!-- TCL G08 remote (Smart TV Pro, Google TV 14): TCL's shortcut manager hands these to the stock home,
+             which is disabled. Apple TV's button (4160) opens Max instead; the Live TV button (4001, scancode 365)
+             opens the TV app, whose GlobalKeyService only answers it over the stock home. Answered on Home by
+             MainActivity; from inside apps only with InputKeyService, which costs held-volume repeat on this set. -->
+        <item>4062:com.netflix.ninja</item>
+        <item>4099:com.amazon.amazonvideo.livingroom</item>
+        <item>190:com.google.android.youtube.tv</item>
+        <item>4160:com.wbd.stream</item>
+        <item>4001:com.tcl.tv</item>
     </string-array>
 
     <!-- Package of the stock launcher, for TVs whose firmware turns it back on after it was disabled. XGIMI's
@@ -162,6 +188,12 @@
          Whenever that launcher's home screen comes up anyway, HomeKeyService (HOME_KEY_SERVICE=1) sends the TV
          straight back here. A theme's config.json can set it too. Leave empty to omit. -->
     <string name="stock_home_redirect" translatable="false"></string>
+
+    <!-- Now-playing card on Home for this media app: artwork, track, artist, progress and Previous / Play-Pause / Next,
+         to the right of the top shelf. Reads the app's MediaSession, which needs notification access:
+         `cmd notification allow_listener com.gathin.tvhome/com.gathin.tvhome.MediaListener` (work/build-and-install.sh
+         does it). Without access, or while the app has no session, the card offers to open the app. Empty: no card. -->
+    <string name="now_playing_package" translatable="false">com.spotify.tv.android</string>
 
     <!-- Show the Solar Hijri (Shamsi) date used in Iran and Afghanistan, e.g. "27 Mehr 1405", above the
          Gregorian date. -->
@@ -186,7 +218,9 @@
     <bool name="reorder_button">false</bool>
     <!-- Wi-Fi and Settings as round icon-only buttons (the network name moves to the talkback description);
          Inputs keeps its label. -->
-    <bool name="icon_only_buttons">false</bool>
+    <bool name="icon_only_buttons">true</bool>
+    <!-- With icon_only_buttons: Inputs as a round icon-only button too (its name moves to the talkback description). -->
+    <bool name="inputs_icon_only">true</bool>
     <!-- The app library as a round button in the top bar, beside Settings (app_library must be on too). -->
     <bool name="library_button">false</bool>
     <!-- With icon_only_buttons: keep the network name on the Wi-Fi pill up to this width in dp, cut with an ellipsis.
@@ -220,7 +254,12 @@
 
     <!-- Tiles per row in the grid; the dock always has this many slots. Tiles are 180dp wide at 4 columns and
          shrink to fit from 5 up (about 144dp at 5, 117dp at 6 on a 1080p TV). -->
-    <integer name="columns">4</integer>
+    <integer name="columns">7</integer>
+
+    <!-- Columns of the app grid under the dock, when it should differ from the dock's: fewer columns make the
+         grid's tiles bigger than the dock's (5 under a 7-app dock). 0 keeps the grid at `columns`. Ignored with
+         dock_row false, where there is one grid. -->
+    <integer name="grid_columns">6</integer>
 
     <!-- Basic motion is on; advanced effects are opt-in in the launcher's own Settings screen. -->
     <bool name="animations">true</bool>
@@ -262,8 +301,8 @@
     <!-- Where the TV is, in decimal degrees, so the sky's sunrise and sunset glows follow the real sun
          (computed on the TV, no network). Empty: a fixed temperate day, sunset glow around 19:00.
          Vilnius: 54.69 and 25.28. -->
-    <string name="latitude" translatable="false"></string>
-    <string name="longitude" translatable="false"></string>
+    <string name="latitude" translatable="false">19.43</string>
+    <string name="longitude" translatable="false">-99.13</string>
 
     <!-- Cinematic top shelf: the focused dock app's artwork, softened, fills the top of the screen in its
          colour; the shelf gets a larger name, a "Last opened" line (from the apps Home opened) and dock position

@@ -1,0 +1,64 @@
+# Packages disabled on the TCL G08 (Smart TV Pro, G08_4K_GB, Google TV 14, UTT2.250416.001 AU02)
+# with `pm disable-user --user 0`, in the order they were disabled. my-tv/restore.sh re-enables all of them.
+# Original state: backup/20261021-213511/ (0 packages were disabled before this session).
+#
+# 39 packages (40 at the reboot test; com.calientetv = FOX One MX re-enabled afterwards). Survived a reboot on 2026-10-21: `pm list packages -d` was identical before and after, so this
+# firmware does not re-enable any of them at boot.
+# Kept on purpose: com.tcl.tv, com.tcl.tvinput, com.tcl.suspension (Input panel), com.tcl.autopair (remote
+# pairing), com.tcl.interactive, com.tcl.ttvs (TCL firmware updates + source overlays), com.tcl.eva,
+# com.tcl.gamebar, com.tcl.UpdatePeripheral, com.tcl.inputmethod.international (keyboard), com.mediatek.*,
+# com.google.android.apps.mediashell (Chromecast), AirPlay, Play Store / Play Services, com.tcl.waterfall.overseas
+# (TCL Channel), com.tcl.gallery and com.tcl.ui_mediaCenter (USB / recordings), apps.tv.dreamx (screensaver).
+
+# Batch A: TCL ads, promo, demo and content pushed to Home
+com.tcl.exhibit                        # store demo
+com.tcl.esticker                       # retail-demo sticker
+com.tcl.hotelmenu                      # hotel-mode portal
+com.tcl.messagebox                     # TCL pushed messages and promos
+com.tcl.dashboard                      # TCL Home panel and its promos
+com.tcl.tv.tclhome_passive             # TCL content pushed to the home screen at boot
+# com.tcl.waterfall.overseas            # re-enabled: this is the "TCL Channel" app the owner uses (remote TC button opens it)
+com.tcl.magiconnectfree                # T-Cast / MagiConnect phone promo
+
+# Batch B: telemetry, diagnostics, cleaner and Android 14 ad / privacy-sandbox services
+com.tcl.logkit                         # log capture
+com.tcl.guard                          # TGuard: device-use tracking, cleaner/app manager
+com.google.android.feedback            # Google feedback reporter
+com.android.tv.feedbackconsent         # feedback consent
+com.android.adservices.api             # Privacy Sandbox ad services
+com.android.ondevicepersonalization.services # on-device ad personalisation
+com.android.federatedcompute.services  # federated learning
+com.mediatek.backgrounddetection       # MediaTek background app detection
+
+# Batch C: extras nobody asked for, duplicate webviews (com.google.android.webview is the active provider)
+com.tcl.ocean.instructions             # on-TV manual / tips overlay
+com.tcl.hearaid                        # hearing test helper
+com.tcl.t_solo                         # Bluetooth listen-alone
+com.tcl.repairguide                    # self-diagnosis guide
+com.tcl.usercenter                     # TCL account
+com.android.printspooler               # printing
+com.google.android.syncadapters.calendar # calendar sync
+com.google.android.onetimeinitializer  # first-boot initialiser
+com.tcl.android.webview                # TCL WebView, unused
+com.mediatek.support.webview           # MediaTek WebView, unused
+
+# Batch D: services the owner does not use (Chromecast and AirPlay kept by choice)
+com.google.android.katniss             # Google Assistant / voice search (mic button stops working)
+com.tcl.miracast                       # Miracast screen mirroring
+com.tcl.smartalexa                     # TCL Alexa
+
+# Batch E: preloaded streaming apps and storefronts the owner does not use
+com.apple.atve.androidtv.appletv       # Apple TV
+com.cbs.ca                             # Paramount+
+com.azteca.live                        # TV Azteca
+# com.calientetv                       # re-enabled: this is "FOX One MX" (the label is not Caliente TV), owner uses it
+com.nickstamp.mexicotv                 # Mexico TV
+tv.pluto.android                       # Pluto TV
+com.viki.android                       # Viki
+com.tencent.qqlivei18n                 # WeTV
+com.google.android.videos              # Google TV / Play Movies storefront
+com.google.android.play.games          # Play Games
+
+# Launcher handover (after the saved Wi-Fi was re-created by Settings, so it no longer belongs to setupwraith)
+com.google.android.tungsten.setupwraith # setup wizard; its RecoveryActivity takes Home when launcherx is off
+com.google.android.apps.tv.launcherx   # stock Google TV launcher, off once the new launcher is Home

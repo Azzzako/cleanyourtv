@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Netflix's "N" for an icon tile (app_icons in config.xml): the Netflix TV app's own icon is its wordmark on white.
+     Path from Simple Icons (CC0, simpleicons.org); split so the legs take the darker red of the official mark and
+     the diagonal the brighter one. Black square behind, the N in its middle 60%. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="40"
+    android:viewportHeight="40">
+    <path android:fillColor="#FF000000" android:pathData="M0,0h40v40h-40z" />
+    <group android:translateX="8" android:translateY="8">
+        <path android:fillColor="#FFB1060F" android:pathData="M13.887,0v9.63L18.6,22.951c-0.043,-7.86 -0.004,-15.913 0.002,-22.95z" />
+        <path android:fillColor="#FFB1060F" android:pathData="M5.398,1.05V24c1.873,-0.225 2.81,-0.312 4.715,-0.398v-9.22z" />
+        <path android:fillColor="#FFE50914" android:pathData="M5.398,0v0.006c3.028,8.556 5.37,15.175 8.348,23.596 2.344,0.058 4.85,0.398 4.854,0.398 -2.8,-7.924 -5.923,-16.747 -8.487,-24z" />
+    </group>
+</vector>

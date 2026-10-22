@@ -112,16 +112,35 @@
         android:orientation="vertical"
         android:alpha="0">
 
-        <TextView
-            android:id="@+id/heroName"
+        <!-- The name, and the hacker skin's blinking cursor after it. -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#FFFFFFFF"
-            android:textSize="48sp"
-            android:fontFamily="@font/outfit_light"
-            android:letterSpacing="-0.02"
-            android:includeFontPadding="false"
-            android:singleLine="true" />
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/heroName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFFFF"
+                android:textSize="48sp"
+                android:fontFamily="@font/outfit_light"
+                android:letterSpacing="-0.02"
+                android:includeFontPadding="false"
+                android:singleLine="true" />
+
+            <TextView
+                android:id="@+id/heroCursor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="▌"
+                android:textSize="48sp"
+                android:fontFamily="@font/outfit_light"
+                android:includeFontPadding="false"
+                android:importantForAccessibility="no"
+                android:visibility="gone" />
+        </LinearLayout>
 
         <!-- Cinematic shelf only: when the app was last opened, and the dock position dots. -->
         <TextView
@@ -144,6 +163,114 @@
             android:layout_marginTop="16dp"
             android:orientation="horizontal"
             android:visibility="gone" />
+    </LinearLayout>
+
+    <!-- Now-playing card (now_playing_package in config.xml, see NowPlaying): the app, track, artist and progress
+         over Previous / Play-Pause / Next. Its right edge is fixed; code stretches it left to just short of the top
+         shelf's name and lines its bottom up with the shelf's above the dock. Hidden whenever the shelf is. -->
+    <LinearLayout
+        android:id="@+id/nowPlaying"
+        android:layout_width="340dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginEnd="68dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="22dp"
+        android:paddingEnd="22dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:background="@drawable/now_playing_bg"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:alpha="0"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+
+            <TextView
+                android:id="@+id/npSource"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:textColor="#99FFFFFF"
+                android:textSize="11sp"
+                android:fontFamily="@font/outfit_medium"
+                android:letterSpacing="0.12" />
+
+            <TextView
+                android:id="@+id/npTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:textColor="#FFFFFFFF"
+                android:textSize="19sp"
+                android:fontFamily="@font/outfit_medium" />
+
+            <TextView
+                android:id="@+id/npArtist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:textColor="#B3FFFFFF"
+                android:textSize="14sp"
+                android:fontFamily="@font/outfit_light" />
+
+            <FrameLayout
+                android:id="@+id/npTrack"
+                android:layout_width="match_parent"
+                android:layout_height="3dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/np_track"
+                android:visibility="invisible">
+
+                <View
+                    android:id="@+id/npProgress"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/np_fill"
+                    android:scaleX="0" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal"
+                android:clipChildren="false"
+                android:clipToPadding="false">
+
+                <TextView
+                    android:id="@+id/npPrev"
+                    style="@style/TopButtonIcon"
+                    android:layout_marginStart="0dp"
+                    android:contentDescription="@string/now_playing_prev"
+                    android:drawableStart="@drawable/ic_skip_prev" />
+
+                <TextView
+                    android:id="@+id/npPlay"
+                    style="@style/TopButtonIcon"
+                    android:layout_marginStart="8dp"
+                    android:contentDescription="@string/now_playing_play_pause"
+                    android:drawableStart="@drawable/ic_play" />
+
+                <TextView
+                    android:id="@+id/npNext"
+                    style="@style/TopButtonIcon"
+                    android:layout_marginStart="8dp"
+                    android:contentDescription="@string/now_playing_next"
+                    android:drawableStart="@drawable/ic_skip_next" />
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -376,4 +503,11 @@
         android:layout_height="10dp"
         android:alpha="0"
         android:importantForAccessibility="no" />
+
+    <!-- Hacker skin only (hacker_skin in skin.xml): CRT scanlines over everything. -->
+    <com.gathin.tvhome.ScanlinesView
+        android:id="@+id/scanlines"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 </FrameLayout>

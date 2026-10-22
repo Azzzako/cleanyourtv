@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The now-playing card: the same frosted glass as the top-bar pills, as a rounded panel. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient android:angle="270" android:startColor="@color/skin_pill_top" android:endColor="@color/skin_pill_bottom" />
+    <stroke android:width="1dp" android:color="@color/skin_pill_stroke" />
+    <corners android:radius="24dp" />
+</shape>

@@ -14,6 +14,7 @@ import android.graphics.Color;
 import android.graphics.Outline;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.Settings;
@@ -102,12 +103,24 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (innerWidthPx <= 0 || columns <= 0) return design;
         int cell = innerWidthPx / columns;
         int fit = (int) ((cell - 12 * density) / FOCUS_SCALE);
-        return Math.max(Math.round(80 * density), Math.min(design, fit));
+        int w = Math.max(Math.round(80 * density), Math.min(design, fit));
+        return squareTiles ? Math.max(Math.round(48 * density), Math.round(w * iconTileScale)) : w;
     }
 
     static int tileHeightPx(int tileWidthPx) {
-        return Math.round(tileWidthPx * DESIGN_H_DP / DESIGN_W_DP);
+        return squareTiles ? tileWidthPx : Math.round(tileWidthPx * DESIGN_H_DP / DESIGN_W_DP);
     }
+
+    /**
+     * icon_tiles in config.xml: square tiles that show the app's icon (IconArt) instead of its 16:9 banner. Static
+     * like MainActivity.COLUMNS, because the sizing helpers here are; the adapter sets it when Home builds it, before
+     * the first layout.
+     */
+    static boolean squareTiles;
+    /** icon_tile_percent / 100: an icon tile's share of the size a banner tile would take in the same cell. */
+    static float iconTileScale = 1f;
+    /** Side of the bitmap an icon tile's icon is drawn into, in dp: about the largest tile, five to a row. */
+    private static final float ICON_ART_DP = 160f;
 
     /** Height of one grid item: the tile, the name label under it and the item's own padding. */
     static int itemHeightPx(int tileHeightPx, float density) {
@@ -153,7 +166,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 : TOP_ROOM_DP + COMPACT_BOTTOM_ROOM_DP) * density;
         float perItem = (gridHeightPx - reserved) / (rowsBelowDock + 1);
         float tileH = perItem - (dockRow ? ITEM_EXTRA_DP : COMPACT_ITEM_EXTRA_DP) * density;
-        int byHeight = Math.round(tileH * DESIGN_W_DP / DESIGN_H_DP);
+        int byHeight = Math.round(squareTiles ? tileH : tileH * DESIGN_W_DP / DESIGN_H_DP);
         // Shrink at most to MIN_HEIGHT_FIT of the width-only size. Below that the tiles look lost in their wide
         // columns (2 rows under a titled dock came out at 80dp); the rows that still don't fit run off the bottom
         // and scroll, and MainActivity keeps the title's room above the dock.
@@ -174,6 +187,8 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private boolean reordering;
     private final TileListener listener;
     private final int dockSize;
+    /** Columns of the grid under the dock (grid_columns); its tiles are sized for these, the dock's for dockSize. */
+    private final int gridColumns;
     /** config dock_row: false makes the dock apps the first tiles of one plain grid (names shown, no empty slots). */
     private final boolean dockRow;
     /** config always_show_names: the alpha of an unfocused tile's name (0 hides it). */
@@ -202,12 +217,15 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final Map<String, String> launchActions;
     /** Tile names and bundled banners that replace the app's own (config.xml, app_labels and app_banners). */
     private final Map<String, String> appLabels, appBanners;
+    /** Package to a bundled icon_* drawable its icon tile shows instead of the app's icon (config.xml, app_icons). */
+    private final Map<String, String> appIcons;
     private final List<Entry> items = new ArrayList<>();
 
-    AppAdapter(Context ctx, TileListener listener, int dockSize, Config cfg) {
+    AppAdapter(Context ctx, TileListener listener, int dockSize, int gridColumns, Config cfg) {
         this.ctx = ctx;
         this.listener = listener;
         this.dockSize = dockSize;
+        this.gridColumns = gridColumns;
         this.favourites = cfg.dockApps;
         this.fillDock = cfg.fillDock;
         this.hidden = new HashSet<>(cfg.hiddenApps);
@@ -225,6 +243,9 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         this.launchActions = cfg.launchActions;
         this.appLabels = cfg.appLabels;
         this.appBanners = cfg.appBanners;
+        squareTiles = ctx.getResources().getBoolean(R.bool.icon_tiles);
+        iconTileScale = Math.max(30, Math.min(100, ctx.getResources().getInteger(R.integer.icon_tile_percent))) / 100f;
+        this.appIcons = Config.packageMap(Arrays.asList(ctx.getResources().getStringArray(R.array.app_icons)));
         // Tiles keep their identity across reload(), so a focused tile stays on its app instead of
         // its view being rebound to whatever app now sits in that slot.
         setHasStableIds(true);
@@ -271,8 +292,13 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             String label = card != null ? card.label : Cards.cleanLabel(
                     appLabels.containsKey(pkg) ? appLabels.get(pkg) : String.valueOf(ri.loadLabel(pm)), pkg);
             if (!seen.add(pkg + '\n' + label)) continue;
-            Drawable banner = bundledBanner(appBanners.get(pkg));
-            if (banner == null) banner = loadBanner(pm, ri);
+            Drawable banner;
+            if (squareTiles) {
+                banner = iconTile(pm, ri, appIcons.get(pkg));
+            } else {
+                banner = bundledBanner(appBanners.get(pkg));
+                if (banner == null) banner = loadBanner(pm, ri);
+            }
             // The icon is only drawn (and sampled for the glow) when there is no banner, so a tile with a
             // banner skips loading and decoding it.
             Drawable icon = banner == null ? ri.loadIcon(pm) : null;
@@ -321,6 +347,32 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (name == null || !name.startsWith("banner_")) return null;
         int id = ctx.getResources().getIdentifier(name, "drawable", ctx.getPackageName());
         return id != 0 ? ctx.getDrawable(id) : null;
+    }
+
+    /**
+     * The square an icon tile shows: a bundled icon_* drawable when app_icons names one (an app whose own icon is a
+     * wordmark, as Netflix's TV app has), else the app's icon at xxxhdpi, drawn full bleed by IconArt.
+     */
+    private Drawable iconTile(PackageManager pm, ResolveInfo ri, String bundled) {
+        Drawable art = null;
+        if (bundled != null && bundled.startsWith("icon_")) {
+            int id = ctx.getResources().getIdentifier(bundled, "drawable", ctx.getPackageName());
+            if (id != 0) art = ctx.getDrawable(id);
+        }
+        if (art == null) {
+            int id = ri.activityInfo.getIconResource();   // the activity's icon, else the app's
+            if (id != 0) {
+                try {
+                    Resources resources = pm.getResourcesForApplication(ri.activityInfo.applicationInfo);
+                    art = resources.getDrawableForDensity(id, DisplayMetrics.DENSITY_XXXHIGH, null);
+                } catch (PackageManager.NameNotFoundException | Resources.NotFoundException ignored) {
+                }
+            }
+        }
+        if (art == null) art = ri.loadIcon(pm);
+        if (art == null) return null;
+        int size = Math.round(ICON_ART_DP * ctx.getResources().getDisplayMetrics().density);
+        return new BitmapDrawable(ctx.getResources(), IconArt.render(art, size, ctx.getColor(R.color.skin_tile)));
     }
 
     private Drawable loadBanner(PackageManager pm, ResolveInfo ri) {
@@ -375,7 +427,8 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         float density = parent.getResources().getDisplayMetrics().density;
         int width = parent.getWidth() > 0 ? parent.getWidth() : parent.getMeasuredWidth();
         int inner = width - parent.getPaddingLeft() - parent.getPaddingRight();
-        int w = tileWidthPx(inner, parent.getHeight(), dockSize, rowsBelowDock, dockTitle, dockRow, density), h = tileHeightPx(w);
+        int columns = viewType == 2 || !dockRow ? dockSize : gridColumns;
+        int w = tileWidthPx(inner, parent.getHeight(), columns, rowsBelowDock, dockTitle, dockRow, density), h = tileHeightPx(w);
         View card = v.findViewById(R.id.card);
         ViewGroup.LayoutParams cardLp = card.getLayoutParams();
         cardLp.width = w;
@@ -383,7 +436,8 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         card.setLayoutParams(cardLp);
         View name = v.findViewById(R.id.name);
         ViewGroup.MarginLayoutParams nameLp = (ViewGroup.MarginLayoutParams) name.getLayoutParams();
-        nameLp.width = w;
+        // Icon tiles leave room between them: the name may use the cell's width, not only the icon's.
+        nameLp.width = squareTiles && columns > 0 ? Math.max(w, inner / columns - Math.round(8 * density)) : w;
         nameLp.topMargin = h + Math.round((dockRow ? 7 : 4) * density);
         if (!dockRow) {
             // Compact spacing (COMPACT_ITEM_EXTRA_DP): 4dp item padding and a 20dp name instead of 8dp and 22dp.
@@ -491,7 +545,12 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     boolean isLibraryAt(int position) { return showLibrary && position == items.size(); }
 
-    @Override public int getItemViewType(int position) { return isLibraryAt(position) ? 1 : 0; }
+    /** 1: the library row; 2: a dock tile; 0: a grid tile. Dock and grid tiles differ in size when grid_columns
+     *  differs from the dock's, and a holder keeps the size it was created with. */
+    @Override public int getItemViewType(int position) {
+        if (isLibraryAt(position)) return 1;
+        return dockRow && position < dockSize ? 2 : 0;
+    }
 
     boolean containsPackage(String pkg) {
         for (Entry entry : items) if (entry.pkg.equals(pkg)) return true;
@@ -654,6 +713,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     /** Corner radius for a tile of this width: 16dp at the design width, proportionally less when smaller. */
     static float cornerRadius(int tileWidthPx, float density) {
+        if (squareTiles) return tileWidthPx * 0.2237f;   // the rounding of a phone's app icon, at any size
         return 16f * density * Math.min(1f, tileWidthPx / (DESIGN_W_DP * density));
     }
 

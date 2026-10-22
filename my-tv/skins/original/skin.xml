@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Skin: the colours the launcher's drawables take (pills, panels, tiles, the player card) and, with hacker_skin, the
+  ones code applies (glass highlight, dock band, glow, greeting, cursor, CRT lines). Switch with
+  my-tv/skin.sh original|hacker, which also swaps the font and rebuilds. This copy: the original look.
+-->
+<resources>
+    <!-- Code-side skin: accent glass, dock and glow, green greeting, blinking cursor, CRT lines. -->
+    <bool name="hacker_skin">false</bool>
+    <!-- Accent for code-side parts (only used with hacker_skin). -->
+    <color name="skin_accent">#FF00EA64</color>
+    <!-- Ambient glow behind the shelf, a darker accent so the background colour still reads (only with hacker_skin). -->
+    <color name="skin_glow">#FF00EA64</color>
+    <!-- Focused pill and Inputs row. -->
+    <color name="skin_focus_bg">#F5FFFFFF</color>
+    <!-- Text and icons on a focused pill. -->
+    <color name="skin_on_focus">#FF111111</color>
+    <color name="skin_on_focus_dim">#99111111</color>
+    <color name="skin_on_focus_mid">#E6111111</color>
+    <!-- Unfocused pill and the player card: gradient top, bottom and edge. -->
+    <color name="skin_pill_top">#2EFFFFFF</color>
+    <color name="skin_pill_bottom">#14FFFFFF</color>
+    <color name="skin_pill_stroke">#38FFFFFF</color>
+    <!-- Popup panels (Inputs menu and the like). -->
+    <color name="skin_panel_top">#F22A2A2E</color>
+    <color name="skin_panel_bottom">#F5161618</color>
+    <color name="skin_panel_stroke">#33FFFFFF</color>
+    <!-- Tile behind an app banner. -->
+    <color name="skin_tile">#FF1C1C1E</color>
+    <!-- Player card progress bar. -->
+    <color name="skin_progress">#E6FFFFFF</color>
+    <color name="skin_progress_track">#33FFFFFF</color>
+    <!-- Dock band and its edge (only used with hacker_skin). -->
+    <color name="skin_dock_band">#FF141416</color>
+    <color name="skin_dock_edge">#1FFFFFFF</color>
+    <!-- CRT line every third pixel row (only with hacker_skin). -->
+    <color name="skin_scanline">#00000000</color>
+</resources>

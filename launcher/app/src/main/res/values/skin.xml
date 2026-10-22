@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Skin: the colours the launcher's drawables take (pills, panels, tiles, the player card) and, with hacker_skin, the
+  ones code applies (glass highlight, dock band, glow, greeting, cursor, CRT lines). Switch with
+  work/skin.sh original|hacker, which also swaps the font and rebuilds. This copy: HackerRank: navy #0E141E, green #00EA64, JetBrains Mono.
+-->
+<resources>
+    <!-- Code-side skin: accent glass, dock and glow, green greeting, blinking cursor, CRT lines. -->
+    <bool name="hacker_skin">true</bool>
+    <!-- Accent for code-side parts (only used with hacker_skin). -->
+    <color name="skin_accent">#FF00EA64</color>
+    <!-- Ambient glow behind the shelf, a darker accent so the background colour still reads (only with hacker_skin). -->
+    <color name="skin_glow">#FF0A5C38</color>
+    <!-- Focused pill and Inputs row. -->
+    <color name="skin_focus_bg">#FF00EA64</color>
+    <!-- Text and icons on a focused pill. -->
+    <color name="skin_on_focus">#FF0E141E</color>
+    <color name="skin_on_focus_dim">#990E141E</color>
+    <color name="skin_on_focus_mid">#E60E141E</color>
+    <!-- Unfocused pill and the player card: gradient top, bottom and edge. -->
+    <color name="skin_pill_top">#FF1A2332</color>
+    <color name="skin_pill_bottom">#FF141B26</color>
+    <color name="skin_pill_stroke">#FF39424E</color>
+    <!-- Popup panels (Inputs menu and the like). -->
+    <color name="skin_panel_top">#F21A2332</color>
+    <color name="skin_panel_bottom">#F50E141E</color>
+    <color name="skin_panel_stroke">#FF39424E</color>
+    <!-- Tile behind an app banner. -->
+    <color name="skin_tile">#FF1A2332</color>
+    <!-- Player card progress bar. -->
+    <color name="skin_progress">#FF00EA64</color>
+    <color name="skin_progress_track">#FF39424E</color>
+    <!-- Dock band and its edge (only used with hacker_skin). -->
+    <color name="skin_dock_band">#E6141B26</color>
+    <color name="skin_dock_edge">#8000EA64</color>
+    <!-- CRT line every third pixel row (only with hacker_skin). -->
+    <color name="skin_scanline">#38000000</color>
+</resources>
