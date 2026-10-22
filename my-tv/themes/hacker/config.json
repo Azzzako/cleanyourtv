@@ -1,10 +1,12 @@
 {
   "background_color": "#0E141E",
-  "wallpaper": false,
+  "wallpaper": true,
   "sky_intensity": 0,
   "dock_glass": false,
   "cinematic_home": false,
-  "ambient_glow": true,
+  "ambient_glow": false,
   "greeting_name": "Asael",
-  "show_stats": false
+  "show_stats": false,
+  "wallpaper_dim": 30,
+  "wallpaper_true_color": true
 }

@@ -94,8 +94,11 @@ presionado OK en **Ajustes** (la píldora de arriba a la derecha) → reordenar.
 
 ## Tema y fondo de pantalla
 
-Con el estilo original va el tema `my-tv/themes/asael`; con el hacker, `my-tv/themes/hacker` (igual pero con fondo
-`#0E141E`, sin cielo ni estante cinematográfico). El `config.json` de asael:
+Con el estilo original va el tema `my-tv/themes/asael`; con el hacker, `my-tv/themes/hacker`: fondo de pantalla
+`wallpaper.jpg` (Lain en su cuarto, 1920x1080, oscurecido 30 % con `wallpaper_dim`), sin el brillo verde de fondo
+(`ambient_glow: false`) para que la imagen conserve sus azules, sin cielo ni estante cinematográfico. Para cambiar la
+imagen, reemplaza `my-tv/themes/hacker/wallpaper.jpg` (oscura, 16:9, menos de ~300 KB) y corre
+`my-tv/theme.sh my-tv/themes/hacker`. El `config.json` de asael:
 
 ```text
 {
