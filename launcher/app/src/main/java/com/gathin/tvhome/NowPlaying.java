@@ -17,14 +17,13 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.TextView;
 import java.util.List;
-import java.util.Locale;
 
 /**
- * A now-playing ticker in the top bar for one media app (now_playing_package in config.xml, Spotify here): the app,
- * whether it plays, the track and artist scrolling past forever (TickerView), Previous / Play-Pause / Next and a thin
+ * A now-playing ticker in the top bar for one media app (now_playing_package in config.xml, Spotify here): the track
+ * and artist (TickerView, scrolling forever only when they do not fit), Previous / Play-Pause / Next and a thin
  * progress line. It follows the app's MediaSession, which Android only shows to an app with notification access
- * (MediaListener); without it, or while the app has no active session, the ticker names the app and Play opens it.
- * Event driven, apart from the ticker's scroll and a one-second progress tick, both only while Home is started.
+ * (MediaListener); without it, or while the app has no active session, the ticker just says Play, which opens the
+ * app. Event driven, apart from the ticker's scroll and a one-second progress tick, both only while Home is started.
  */
 final class NowPlaying {
 
@@ -34,8 +33,6 @@ final class NowPlaying {
 
         void onNowPlayingRight();
     }
-
-    private static final String SEP = "  ·  ";
 
     private final Context ctx;
     private final View bar;
@@ -207,24 +204,19 @@ final class NowPlaying {
 
     private void render() {
         if (!enabled) return;
-        Locale locale = Locale.getDefault();
         MediaMetadata md = controller == null ? null : controller.getMetadata();
         CharSequence trackTitle = md == null ? null : md.getText(MediaMetadata.METADATA_KEY_TITLE);
         if (md != null && (trackTitle == null || trackTitle.length() == 0)) trackTitle = md.getDescription().getTitle();
         boolean hasTrack = trackTitle != null && trackTitle.length() > 0;
         boolean playing = isPlaying();
-        String app = appLabel.toString().toUpperCase(locale);
 
         if (hasTrack) {
             CharSequence by = md.getText(MediaMetadata.METADATA_KEY_ARTIST);
             if (by == null || by.length() == 0) by = md.getText(MediaMetadata.METADATA_KEY_ALBUM_ARTIST);
             if (by == null || by.length() == 0) by = md.getDescription().getSubtitle();
-            String state = ctx.getString(playing ? R.string.now_playing_playing : R.string.now_playing_paused)
-                    .toUpperCase(locale);
-            ticker.setText(app + SEP + state + SEP + trackTitle + (by == null || by.length() == 0 ? "" : " — " + by));
+            ticker.setText(trackTitle + (by == null || by.length() == 0 ? "" : " — " + by));
         } else {
-            ticker.setText(app + SEP + ctx.getString(R.string.now_playing_idle).toUpperCase(locale)
-                    + SEP + ctx.getString(R.string.now_playing_open));
+            ticker.setText(ctx.getString(R.string.now_playing_play));
         }
 
         // Previous and Next only mean something with a session; move focus off them before they go.

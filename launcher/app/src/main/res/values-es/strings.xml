@@ -101,11 +101,8 @@
     <string name="race_live">%1$s · en directo</string>
     <string name="race_finished">Bandera a cuadros</string>
     <string name="last_opened">Abierta por última vez %1$s</string>
-    <!-- Now-playing card on Home (NowPlaying). -->
-    <string name="now_playing_playing">Reproduciendo</string>
-    <string name="now_playing_paused">En pausa</string>
-    <string name="now_playing_idle">Nada sonando</string>
-    <string name="now_playing_open">Presiona reproducir para abrirlo</string>
+    <!-- Now-playing ticker on Home (NowPlaying). -->
+    <string name="now_playing_play">Reproducir</string>
     <string name="now_playing_prev">Anterior</string>
     <string name="now_playing_play_pause">Reproducir o pausar</string>
     <string name="now_playing_next">Siguiente</string>

@@ -431,7 +431,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                     }
                 });
         TextView dateView = findViewById(R.id.date);
-        dateView.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> placeNowPlaying());
+        // Posted: a margin changed from inside a layout pass may not be laid out until something else asks.
+        dateView.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> dateView.post(this::placeNowPlaying));
         dateView.addTextChangedListener(new android.text.TextWatcher() {
             @Override public void beforeTextChanged(CharSequence c, int a, int b, int d) { }
             @Override public void onTextChanged(CharSequence c, int a, int b, int d) { }
@@ -1050,6 +1051,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
+            findViewById(R.id.date).post(this::placeNowPlaying);
             if (libraryFocusPending && appLibrary == null) focusLibrary();
             showCardPrompt();
         }

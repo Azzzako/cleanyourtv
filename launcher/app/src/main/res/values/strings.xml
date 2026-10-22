@@ -140,11 +140,8 @@
     <!-- Cinematic top shelf (cinematic_home): the line under the focused dock app's name; %1$s is when it was
          last opened, e.g. "5 minutes ago" or "yesterday, 9:40 pm". -->
     <string name="last_opened">Last opened %1$s</string>
-    <!-- Now-playing card on Home (NowPlaying). -->
-    <string name="now_playing_playing">Playing</string>
-    <string name="now_playing_paused">Paused</string>
-    <string name="now_playing_idle">Nothing playing</string>
-    <string name="now_playing_open">Press play to open it</string>
+    <!-- Now-playing ticker on Home (NowPlaying). -->
+    <string name="now_playing_play">Play</string>
     <string name="now_playing_prev">Previous</string>
     <string name="now_playing_play_pause">Play or pause</string>
     <string name="now_playing_next">Next</string>

@@ -95,7 +95,7 @@ presionado OK en **Ajustes** (la píldora de arriba a la derecha) → reordenar.
 ## Tema y fondo de pantalla
 
 Con el estilo original va el tema `my-tv/themes/asael`; con el hacker, `my-tv/themes/hacker`: fondo de pantalla
-`wallpaper.jpg` (Lain en su cuarto, 1920x1080, oscurecido 30 % con `wallpaper_dim`), sin el brillo verde de fondo
+`wallpaper.jpg` (programador con audífonos frente a sus monitores, 1920x1080, oscurecido 45 % con `wallpaper_dim`), sin el brillo verde de fondo
 (`ambient_glow: false`) para que la imagen conserve sus azules, sin cielo ni estante cinematográfico. Para cambiar la
 imagen, reemplaza `my-tv/themes/hacker/wallpaper.jpg` (oscura, 16:9, menos de ~300 KB) y corre
 `my-tv/theme.sh my-tv/themes/hacker`. El `config.json` de asael:
@@ -172,13 +172,13 @@ Luego `my-tv/build-and-install.sh`.
 ## Reproductor de Spotify en Inicio
 
 Arriba, entre la fecha y los botones de Entradas, Wi‑Fi y Ajustes, hay una **cinta tipo anuncio**: una nota verde,
-el texto que corre sin fin ("SPOTIFY · REPRODUCIENDO · canción — artista"), los botones ⏮ ⏯ ⏭ y una línea de
-progreso en el borde de abajo.
+"canción — artista", los botones ⏮ ⏯ ⏭ y una línea de progreso en el borde de abajo. El texto corre sin fin solo
+cuando no cabe en la cinta; si cabe, se queda quieto.
 
 - Desde el dock, **Arriba** llega a los botones de la cinta; desde Entradas, **Izquierda** entra a la cinta (en ⏭).
   **Abajo** regresa al dock; **Derecha** desde ⏭ vuelve a Entradas.
-- Si Spotify no está sonando, la cinta dice "SPOTIFY · NADA SONANDO · Presiona reproducir para abrirlo" y ▶ abre
-  Spotify. **Mantener OK** en ▶ también abre Spotify.
+- Si Spotify no está sonando, la cinta solo dice "Reproducir" y ▶ abre Spotify. **Mantener OK** en ▶ también abre
+  Spotify.
 - El texto solo corre mientras Inicio está en pantalla; con `reduced_motion` se queda quieto. La línea de progreso se
   actualiza cada segundo solo mientras suena.
 - Lee la sesión multimedia de Spotify, para lo que el launcher tiene **acceso a notificaciones**

@@ -14,9 +14,10 @@ import android.util.TypedValue;
 import android.view.View;
 
 /**
- * One line of text that scrolls right to left forever, like a news ticker: the text, a gap, the text again, so the
- * loop has no seam and no pause. It moves only while running (NowPlaying runs it while Home is started); stopped, it
- * holds still. Its own small layer, so a frame redraws the bar and nothing else; the ends fade out.
+ * One line of text. When it fits, it simply sits at the start. When it does not, it scrolls right to left forever like
+ * a news ticker (the text, a gap, the text again, so the loop has no seam and no pause) with faded ends, and only while
+ * running (NowPlaying runs it while Home is started); stopped, it holds still. Its own small layer, so a scrolling
+ * frame redraws the bar and nothing else.
  */
 public class TickerView extends View {
 
@@ -31,6 +32,8 @@ public class TickerView extends View {
     private String text = "";
     /** The text plus the gap: one period of the loop, in px. */
     private float period;
+    /** The text alone, in px: wider than the view means it scrolls. */
+    private float textWidth;
     private float offset;
     private boolean running;
     private long lastFrame;
@@ -54,6 +57,7 @@ public class TickerView extends View {
         if (value.equals(text)) return;
         text = value;
         period = paint.measureText(text + GAP);
+        textWidth = paint.measureText(text);
         offset = 0f;
         setContentDescription(text);
         invalidate();
@@ -81,6 +85,11 @@ public class TickerView extends View {
         if (text.isEmpty() || period <= 0) return;
         Paint.FontMetrics fm = paint.getFontMetrics();
         float baseline = (getHeight() - fm.ascent - fm.descent) / 2f;
+        if (textWidth <= getWidth()) {
+            offset = 0f;
+            canvas.drawText(text, 0, baseline, paint);
+            return;
+        }
         String loop = text + GAP;
         for (float x = -offset; x < getWidth(); x += period) canvas.drawText(loop, x, baseline, paint);
         canvas.drawRect(0, 0, getWidth(), getHeight(), fade);
