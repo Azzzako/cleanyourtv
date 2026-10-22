@@ -165,114 +165,6 @@
             android:visibility="gone" />
     </LinearLayout>
 
-    <!-- Now-playing card (now_playing_package in config.xml, see NowPlaying): the app, track, artist and progress
-         over Previous / Play-Pause / Next. Its right edge is fixed; code stretches it left to just short of the top
-         shelf's name and lines its bottom up with the shelf's above the dock. Hidden whenever the shelf is. -->
-    <LinearLayout
-        android:id="@+id/nowPlaying"
-        android:layout_width="340dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginEnd="68dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="22dp"
-        android:paddingEnd="22dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp"
-        android:background="@drawable/now_playing_bg"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:alpha="0"
-        android:visibility="gone">
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:clipChildren="false"
-            android:clipToPadding="false">
-
-            <TextView
-                android:id="@+id/npSource"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:textColor="#99FFFFFF"
-                android:textSize="11sp"
-                android:fontFamily="@font/outfit_medium"
-                android:letterSpacing="0.12" />
-
-            <TextView
-                android:id="@+id/npTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:singleLine="true"
-                android:ellipsize="end"
-                android:textColor="#FFFFFFFF"
-                android:textSize="19sp"
-                android:fontFamily="@font/outfit_medium" />
-
-            <TextView
-                android:id="@+id/npArtist"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:ellipsize="end"
-                android:textColor="#B3FFFFFF"
-                android:textSize="14sp"
-                android:fontFamily="@font/outfit_light" />
-
-            <FrameLayout
-                android:id="@+id/npTrack"
-                android:layout_width="match_parent"
-                android:layout_height="3dp"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/np_track"
-                android:visibility="invisible">
-
-                <View
-                    android:id="@+id/npProgress"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/np_fill"
-                    android:scaleX="0" />
-            </FrameLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:orientation="horizontal"
-                android:clipChildren="false"
-                android:clipToPadding="false">
-
-                <TextView
-                    android:id="@+id/npPrev"
-                    style="@style/TopButtonIcon"
-                    android:layout_marginStart="0dp"
-                    android:contentDescription="@string/now_playing_prev"
-                    android:drawableStart="@drawable/ic_skip_prev" />
-
-                <TextView
-                    android:id="@+id/npPlay"
-                    style="@style/TopButtonIcon"
-                    android:layout_marginStart="8dp"
-                    android:contentDescription="@string/now_playing_play_pause"
-                    android:drawableStart="@drawable/ic_play" />
-
-                <TextView
-                    android:id="@+id/npNext"
-                    style="@style/TopButtonIcon"
-                    android:layout_marginStart="8dp"
-                    android:contentDescription="@string/now_playing_next"
-                    android:drawableStart="@drawable/ic_skip_next" />
-            </LinearLayout>
-        </LinearLayout>
-    </LinearLayout>
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -471,6 +363,88 @@
                     android:drawableStart="@drawable/ic_settings"
                     android:nextFocusDown="@+id/grid" />
             </LinearLayout>
+            <!-- Now-playing ticker (now_playing_package in config.xml, see NowPlaying): a news-ticker bar between the
+                 date and the top-right buttons (MainActivity.placeNowPlaying sets its start just past the date). Note badge, the track scrolling past forever, Previous / Play-Pause /
+                 Next, and a thin progress line along its bottom. -->
+            <FrameLayout
+                android:id="@+id/nowPlaying"
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@id/topButtons"
+                android:layout_alignBottom="@id/leftBlock"
+                android:layout_marginBottom="6dp"
+                android:layout_marginStart="420dp"
+                android:background="@drawable/now_playing_bg"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
+
+                    <ImageView
+                        android:id="@+id/npBadge"
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:padding="7dp"
+                        android:background="@drawable/np_badge_bg"
+                        android:src="@drawable/ic_music_note"
+                        android:tint="@color/skin_on_focus"
+                        android:importantForAccessibility="no" />
+
+                    <com.gathin.tvhome.TickerView
+                        android:id="@+id/npTicker"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="8dp" />
+
+                    <TextView
+                        android:id="@+id/npPrev"
+                        style="@style/MediaButton"
+                        android:contentDescription="@string/now_playing_prev"
+                        android:drawableStart="@drawable/ic_skip_prev" />
+
+                    <TextView
+                        android:id="@+id/npPlay"
+                        style="@style/MediaButton"
+                        android:contentDescription="@string/now_playing_play_pause"
+                        android:drawableStart="@drawable/ic_play" />
+
+                    <TextView
+                        android:id="@+id/npNext"
+                        style="@style/MediaButton"
+                        android:contentDescription="@string/now_playing_next"
+                        android:drawableStart="@drawable/ic_skip_next" />
+                </LinearLayout>
+
+                <FrameLayout
+                    android:id="@+id/npTrack"
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginStart="21dp"
+                    android:layout_marginEnd="21dp"
+                    android:background="@drawable/np_track"
+                    android:visibility="invisible">
+
+                    <View
+                        android:id="@+id/npProgress"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/np_fill"
+                        android:scaleX="0" />
+                </FrameLayout>
+            </FrameLayout>
         </RelativeLayout>
 
         <!-- The wrapper clips at the grid's edge; the grid itself must not clip so scaled tiles can overflow their cells. -->

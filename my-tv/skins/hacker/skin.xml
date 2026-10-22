@@ -27,6 +27,8 @@
     <color name="skin_panel_stroke">#FF39424E</color>
     <!-- Tile behind an app banner. -->
     <color name="skin_tile">#FF1A2332</color>
+    <!-- Now-playing ticker text. -->
+    <color name="skin_ticker_text">#FF00EA64</color>
     <!-- Player card progress bar. -->
     <color name="skin_progress">#FF00EA64</color>
     <color name="skin_progress_track">#FF39424E</color>

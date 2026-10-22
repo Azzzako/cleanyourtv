@@ -2,7 +2,7 @@
 <!--
   Skin: the colours the launcher's drawables take (pills, panels, tiles, the player card) and, with hacker_skin, the
   ones code applies (glass highlight, dock band, glow, greeting, cursor, CRT lines). Switch with
-  work/skin.sh original|hacker, which also swaps the font and rebuilds. This copy: HackerRank: navy #0E141E, green #00EA64, JetBrains Mono.
+  my-tv/skin.sh original|hacker, which also swaps the font and rebuilds. This copy: HackerRank: navy #0E141E, green #00EA64, JetBrains Mono.
 -->
 <resources>
     <!-- Code-side skin: accent glass, dock and glow, green greeting, blinking cursor, CRT lines. -->
@@ -27,6 +27,8 @@
     <color name="skin_panel_stroke">#FF39424E</color>
     <!-- Tile behind an app banner. -->
     <color name="skin_tile">#FF1A2332</color>
+    <!-- Now-playing ticker text. -->
+    <color name="skin_ticker_text">#FF00EA64</color>
     <!-- Player card progress bar. -->
     <color name="skin_progress">#FF00EA64</color>
     <color name="skin_progress_track">#FF39424E</color>

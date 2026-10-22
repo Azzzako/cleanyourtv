@@ -35,6 +35,20 @@
         <item name="android:drawablePadding">0dp</item>
     </style>
 
+    <!-- Previous / Play-Pause / Next inside the now-playing ticker: a 34dp circle around the 22dp icon. -->
+    <style name="MediaButton">
+        <item name="android:layout_width">34dp</item>
+        <item name="android:layout_height">34dp</item>
+        <item name="android:layout_marginStart">2dp</item>
+        <item name="android:paddingStart">6dp</item>
+        <item name="android:paddingEnd">6dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/np_btn_bg</item>
+        <item name="android:drawableTint">@drawable/pill_text</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+    </style>
+
     <style name="SettingsRow">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">52dp</item>

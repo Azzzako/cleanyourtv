@@ -15,7 +15,7 @@ TV: TCL `G08`, modelo "Smart TV Pro", producto `G08_4K_GB`, Android 14 (SDK 34),
   (Spotify vive en el reproductor). Cuadrícula de abajo a 6 columnas, con íconos un poco más grandes que los del dock.
   Tema propio **asael** (`my-tv/themes/asael`): cielo que sigue la hora con el sol real de CDMX, dock de vidrio,
   estante cinematográfico y "BUENAS NOCHES, ASAEL". Sin línea de memoria/almacenamiento (`show_stats` en `false`).
-- **Reproductor de Spotify** en Inicio (ver abajo).
+- **Cinta de Spotify** tipo anuncio en la barra de arriba (ver "Reproductor de Spotify en Inicio").
 - **Estilo hacker** (HackerRank) en todo el launcher: ver "Estilo del launcher".
 - **Íconos redondeados** de cada app en lugar de banners: ver "Íconos de las apps".
 - **DNS privado con bloqueo de anuncios** (AdGuard DNS). No bloquea los anuncios de YouTube.
@@ -171,21 +171,20 @@ Luego `my-tv/build-and-install.sh`.
 
 ## Reproductor de Spotify en Inicio
 
-A la derecha del nombre grande, encima del dock, hay una tarjeta con lo que suena en Spotify: "SPOTIFY ·
-REPRODUCIENDO" (o "EN PAUSA"), canción, artista, barra de progreso y botones ⏮ ⏯ ⏭, sin portada. Ocupa todo el
-ancho que deja libre el nombre de la app enfocada: con "Netflix" se estira, con "Prime Video" se encoge, siempre
-sin tapar el título. Solo la barra de progreso usa un temporizador (1 s, mientras suena y estás en Inicio).
+Arriba, entre la fecha y los botones de Entradas, Wi‑Fi y Ajustes, hay una **cinta tipo anuncio**: una nota verde,
+el texto que corre sin fin ("SPOTIFY · REPRODUCIENDO · canción — artista"), los botones ⏮ ⏯ ⏭ y una línea de
+progreso en el borde de abajo.
 
-- Desde el dock, **Arriba** entra a la tarjeta (en ▶/⏸); otra vez **Arriba** va a la barra de arriba, **Abajo**
-  regresa al dock. Izquierda/Derecha se mueven entre los tres botones.
-- Si Spotify no está sonando, la tarjeta dice "Nada sonando" y ▶ abre Spotify. **Mantener OK** en ▶ también abre
-  Spotify.
-- Al bajar a la cuadrícula se oculta.
+- Desde el dock, **Arriba** llega a los botones de la cinta; desde Entradas, **Izquierda** entra a la cinta (en ⏭).
+  **Abajo** regresa al dock; **Derecha** desde ⏭ vuelve a Entradas.
+- Si Spotify no está sonando, la cinta dice "SPOTIFY · NADA SONANDO · Presiona reproducir para abrirlo" y ▶ abre
+  Spotify. **Mantener OK** en ▶ también abre Spotify.
+- El texto solo corre mientras Inicio está en pantalla; con `reduced_motion` se queda quieto. La línea de progreso se
+  actualiza cada segundo solo mientras suena.
 - Lee la sesión multimedia de Spotify, para lo que el launcher tiene **acceso a notificaciones**
   (`MediaListener`; `my-tv/build-and-install.sh` lo concede y `restore.sh` lo quita). No guarda ni envía nada.
-- Para usarla con otra app de música, cambia `now_playing_package` en `config.xml` (por ejemplo
-  `com.google.android.youtube.tvmusic` para YouTube Music); vacío la quita. Luego `my-tv/build-and-install.sh`.
-  El código está en `launcher/app/src/main/java/com/gathin/tvhome/NowPlaying.java`.
+- Color del texto: `skin_ticker_text` en `my-tv/skins/<estilo>/skin.xml`. Velocidad: `SPEED_DP` en
+  `TickerView.java`. Para otra app de música, cambia `now_playing_package` en `config.xml`; vacío la quita.
 
 ## Botones del control
 

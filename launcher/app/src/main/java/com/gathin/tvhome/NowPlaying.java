@@ -1,6 +1,5 @@
 package com.gathin.tvhome;
 
-import android.animation.ValueAnimator;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
@@ -16,40 +15,38 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 import java.util.List;
 import java.util.Locale;
 
 /**
- * A player card on Home for one media app (now_playing_package in config.xml, Spotify here): the app and whether it
- * plays, the track, artist and progress, and Previous / Play-Pause / Next. It follows the app's MediaSession, which
- * Android only shows to an app with notification access (MediaListener); without it, or while the app has no active
- * session, the card names the app and its Play button opens it. Event driven: the only timer is the one-second
- * progress tick, and only while Home is started and a track plays. The card is as wide as the room the top shelf
- * leaves beside it (show).
+ * A now-playing ticker in the top bar for one media app (now_playing_package in config.xml, Spotify here): the app,
+ * whether it plays, the track and artist scrolling past forever (TickerView), Previous / Play-Pause / Next and a thin
+ * progress line. It follows the app's MediaSession, which Android only shows to an app with notification access
+ * (MediaListener); without it, or while the app has no active session, the ticker names the app and Play opens it.
+ * Event driven, apart from the ticker's scroll and a one-second progress tick, both only while Home is started.
  */
 final class NowPlaying {
 
-    /** Where focus goes when it leaves the card up or down. */
+    /** Where focus goes when it leaves the ticker's buttons. */
     interface Host {
-        void onNowPlayingUp();
-
         void onNowPlayingDown();
+
+        void onNowPlayingRight();
     }
 
+    private static final String SEP = "  ·  ";
+
     private final Context ctx;
-    private final View card;
-    private final TextView source;
-    private final TextView title;
-    private final TextView artist;
+    private final View bar;
+    private final TickerView ticker;
     private final View track;
     private final View progress;
     private final TextView prev;
     private final TextView play;
     private final TextView next;
     private final String pkg;
-    private final boolean animate;
+    private final boolean scroll;
     private final Host host;
     private final ComponentName listener;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -58,9 +55,6 @@ final class NowPlaying {
     private CharSequence appLabel = "";
     private MediaController controller;
     private boolean started;
-    private boolean shown;
-    private ValueAnimator widthAnimator;
-    private int targetWidth;
 
     private final MediaSessionManager.OnActiveSessionsChangedListener sessionsChanged = this::onSessions;
 
@@ -90,24 +84,23 @@ final class NowPlaying {
         }
     };
 
-    NowPlaying(Context ctx, View card, String pkg, boolean animate, Host host) {
+    /** @param scroll false (reduced motion) keeps the ticker still. */
+    NowPlaying(Context ctx, View bar, String pkg, boolean scroll, Host host) {
         this.ctx = ctx;
-        this.card = card;
+        this.bar = bar;
         this.pkg = pkg;
-        this.animate = animate;
+        this.scroll = scroll;
         this.host = host;
-        source = card.findViewById(R.id.npSource);
-        title = card.findViewById(R.id.npTitle);
-        artist = card.findViewById(R.id.npArtist);
-        track = card.findViewById(R.id.npTrack);
-        progress = card.findViewById(R.id.npProgress);
-        prev = card.findViewById(R.id.npPrev);
-        play = card.findViewById(R.id.npPlay);
-        next = card.findViewById(R.id.npNext);
+        ticker = bar.findViewById(R.id.npTicker);
+        track = bar.findViewById(R.id.npTrack);
+        progress = bar.findViewById(R.id.npProgress);
+        prev = bar.findViewById(R.id.npPrev);
+        play = bar.findViewById(R.id.npPlay);
+        next = bar.findViewById(R.id.npNext);
         listener = new ComponentName(ctx, MediaListener.class);
         sessions = ctx.getSystemService(MediaSessionManager.class);
         enabled = !pkg.isEmpty() && sessions != null && loadApp();
-        card.setVisibility(View.GONE);
+        bar.setVisibility(enabled ? View.VISIBLE : View.GONE);
         if (!enabled) return;
         progress.setPivotX(0f);
 
@@ -130,15 +123,16 @@ final class NowPlaying {
             if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
             switch (keyCode) {
                 case KeyEvent.KEYCODE_DPAD_UP:
-                    host.onNowPlayingUp();
-                    return true;
+                    return true;                       // the top of the screen
                 case KeyEvent.KEYCODE_DPAD_DOWN:
                     host.onNowPlayingDown();
                     return true;
                 case KeyEvent.KEYCODE_DPAD_LEFT:
-                    return v == firstButton();     // the card's left end: do not fall out to the shelf or a tile
+                    return v == firstButton();         // the ticker's text and badge take no focus
                 case KeyEvent.KEYCODE_DPAD_RIGHT:
-                    return v == lastButton();
+                    if (v != lastButton()) return false;
+                    host.onNowPlayingRight();
+                    return true;
                 default:
                     return false;
             }
@@ -171,11 +165,13 @@ final class NowPlaying {
             setController(null);
         }
         render();
+        ticker.setRunning(scroll);
     }
 
     void stop() {
         if (!enabled) return;
         started = false;
+        ticker.setRunning(false);
         handler.removeCallbacks(tick);
         sessions.removeOnActiveSessionsChangedListener(sessionsChanged);
         setController(null);
@@ -211,25 +207,24 @@ final class NowPlaying {
 
     private void render() {
         if (!enabled) return;
+        Locale locale = Locale.getDefault();
         MediaMetadata md = controller == null ? null : controller.getMetadata();
         CharSequence trackTitle = md == null ? null : md.getText(MediaMetadata.METADATA_KEY_TITLE);
         if (md != null && (trackTitle == null || trackTitle.length() == 0)) trackTitle = md.getDescription().getTitle();
         boolean hasTrack = trackTitle != null && trackTitle.length() > 0;
         boolean playing = isPlaying();
-        String app = appLabel.toString().toUpperCase(Locale.getDefault());
+        String app = appLabel.toString().toUpperCase(locale);
 
         if (hasTrack) {
-            source.setText(app + "  ·  " + ctx.getString(playing ? R.string.now_playing_playing : R.string.now_playing_paused)
-                    .toUpperCase(Locale.getDefault()));
-            title.setText(trackTitle);
             CharSequence by = md.getText(MediaMetadata.METADATA_KEY_ARTIST);
             if (by == null || by.length() == 0) by = md.getText(MediaMetadata.METADATA_KEY_ALBUM_ARTIST);
             if (by == null || by.length() == 0) by = md.getDescription().getSubtitle();
-            artist.setText(by == null ? "" : by);
+            String state = ctx.getString(playing ? R.string.now_playing_playing : R.string.now_playing_paused)
+                    .toUpperCase(locale);
+            ticker.setText(app + SEP + state + SEP + trackTitle + (by == null || by.length() == 0 ? "" : " — " + by));
         } else {
-            source.setText(app);
-            title.setText(ctx.getString(R.string.now_playing_idle));
-            artist.setText(ctx.getString(R.string.now_playing_open));
+            ticker.setText(app + SEP + ctx.getString(R.string.now_playing_idle).toUpperCase(locale)
+                    + SEP + ctx.getString(R.string.now_playing_open));
         }
 
         // Previous and Next only mean something with a session; move focus off them before they go.
@@ -279,76 +274,8 @@ final class NowPlaying {
         return next.getVisibility() == View.VISIBLE ? next : play;
     }
 
-    /**
-     * Shows the card with its bottom at bottomY and its left edge at leftX (both in the root's coordinates): the right
-     * edge stays where the layout puts it, so the card stretches over whatever the top shelf's name leaves free.
-     */
-    void show(float bottomY, float leftX) {
-        if (!enabled) return;
-        card.setVisibility(View.VISIBLE);
-        fitWidth(leftX);
-        if (card.getHeight() == 0) {
-            card.post(() -> {
-                if (shown) card.setY(bottomY - card.getHeight());
-            });
-        } else {
-            card.setY(bottomY - card.getHeight());
-        }
-        if (shown) return;
-        shown = true;
-        card.animate().cancel();
-        if (animate) card.animate().alpha(1f).setDuration(260).start();
-        else card.setAlpha(1f);
-    }
-
-    /** Width from leftX to the card's fixed right edge, never under MIN_WIDTH_DP; animated while the card shows. */
-    private void fitWidth(float leftX) {
-        View parent = (View) card.getParent();
-        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) card.getLayoutParams();
-        if (parent == null || parent.getWidth() == 0) {
-            card.post(() -> fitWidth(leftX));
-            return;
-        }
-        float density = ctx.getResources().getDisplayMetrics().density;
-        int width = Math.max(Math.round(MIN_WIDTH_DP * density),
-                Math.round(parent.getWidth() - lp.getMarginEnd() - leftX));
-        if (width == targetWidth) return;
-        targetWidth = width;
-        if (widthAnimator != null) widthAnimator.cancel();
-        if (!animate || !shown || lp.width <= 0) {
-            lp.width = width;
-            card.setLayoutParams(lp);
-            return;
-        }
-        widthAnimator = ValueAnimator.ofInt(lp.width, width);
-        widthAnimator.setDuration(220);
-        widthAnimator.addUpdateListener(a -> {
-            lp.width = (int) a.getAnimatedValue();
-            card.setLayoutParams(lp);
-        });
-        widthAnimator.start();
-    }
-
-    private static final float MIN_WIDTH_DP = 300;
-
-    /** Hides the card with the shelf; it takes no focus while hidden. */
-    void hide() {
-        if (!enabled || !shown) return;
-        shown = false;
-        card.animate().cancel();
-        if (animate) {
-            card.animate().alpha(0f).setDuration(160).withEndAction(() -> {
-                if (!shown) card.setVisibility(View.INVISIBLE);
-            }).start();
-        } else {
-            card.setAlpha(0f);
-            card.setVisibility(View.INVISIBLE);
-        }
-    }
-
-    /** Puts focus on Play when the card is on screen; false leaves focus where the caller would send it. */
-    boolean focus() {
-        if (!enabled || !shown) return false;
-        return play.requestFocus();
+    /** Focus on the ticker's rightmost button, coming from the top-bar button to its right; false when it is off. */
+    boolean focusFromRight() {
+        return enabled && bar.isShown() && lastButton().requestFocus();
     }
 }

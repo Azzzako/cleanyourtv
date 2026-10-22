@@ -421,14 +421,24 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         heroArt = findViewById(R.id.heroArt);
         nowPlaying = new NowPlaying(this, findViewById(R.id.nowPlaying),
                 getString(R.string.now_playing_package).trim(), animations && !reducedMotion, new NowPlaying.Host() {
-                    @Override public void onNowPlayingUp() {
-                        findViewById(R.id.btnSettings).requestFocus();
-                    }
-
                     @Override public void onNowPlayingDown() {
                         focusTile(dockColumnOf(lastFocused));
                     }
+
+                    @Override public void onNowPlayingRight() {
+                        View inputs = findViewById(R.id.btnInputs);
+                        (inputs.getVisibility() == View.VISIBLE ? inputs : firstTopButton()).requestFocus();
+                    }
                 });
+        TextView dateView = findViewById(R.id.date);
+        dateView.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> placeNowPlaying());
+        dateView.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence c, int a, int b, int d) { }
+            @Override public void onTextChanged(CharSequence c, int a, int b, int d) { }
+            @Override public void afterTextChanged(android.text.Editable e) {
+                dateView.post(MainActivity.this::placeNowPlaying);
+            }
+        });
         cinematic = cfg.cinematicHome;
         glowStyle = cfg.glowStyle;
         if (cinematic) setUpCinematicShelf();
@@ -642,15 +652,18 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
             if (keyCode == KeyEvent.KEYCODE_DPAD_UP) return true;
             if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-                // The player card when it shows, else back to the dock tile Up came from, not wherever the
-                // focus finder lands.
-                if (!nowPlaying.focus()) focusTile(dockColumnOf(lastFocused));
+                // Back to the dock tile Up came from, not wherever the focus finder lands.
+                focusTile(dockColumnOf(lastFocused));
                 return true;
             }
             int firstButton = btnInputs.getVisibility() == View.VISIBLE ? R.id.btnInputs : firstTopButton().getId();
             int leftButton = rtlMenuBar ? R.id.btnSettings : firstButton;
             int rightButton = rtlMenuBar ? firstButton : R.id.btnSettings;
-            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) return v.getId() == leftButton;
+            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                if (v.getId() != leftButton) return false;
+                if (!rtlMenuBar) nowPlaying.focusFromRight();   // on into the now-playing ticker, when it shows
+                return true;
+            }
             return keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && v.getId() == rightButton;
         };
         btnInputs.setOnKeyListener(pillKeys);
@@ -671,7 +684,6 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             heroCursor.setTextColor(skinAccent);
             heroCursor.setTextSize(TypedValue.COMPLEX_UNIT_PX, heroName.getTextSize());
             heroCursor.setVisibility(View.VISIBLE);
-            ((TextView) findViewById(R.id.npSource)).setTextColor(skinAccent);
             findViewById(R.id.scanlines).setVisibility(View.VISIBLE);
         }
 
@@ -1502,8 +1514,6 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         String label = adapter.labelAt(position);
         int color = adapter.ambientColorAt(position);
         float y = dockTopInRoot - 14 * density - 26 * density - hero.getHeight();
-        // Bottoms line up with the shelf's; the card takes the width the shelf's name leaves free.
-        nowPlaying.show(dockTopInRoot - 14 * density - 26 * density, heroRight(position, label) + 56 * density);
         boolean changed = !label.contentEquals(heroName.getText());
         if (cinematic) showHeroArt(position);
 
@@ -1559,22 +1569,25 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     /**
-     * Right edge, in the root's coordinates, of what the top shelf draws for this dock app: its name and, on the
-     * cinematic shelf, the "Last opened" line and the dots. Measured from the text, so it is right before the shelf has
-     * swapped to the new name. The player card stops short of it.
+     * Starts the now-playing ticker just past the date's text. The date's view runs to the top-right buttons, so the
+     * ticker cannot be placed after it in the layout; this measures the longest date line instead, whenever the date
+     * is laid out or changes.
      */
-    private float heroRight(int position, String label) {
-        float w = heroName.getPaint().measureText(label);
-        if (cinematic) {
-            long when = LastOpened.get(this, adapter.packageAt(position));
-            if (when > 0) {
-                String meta = getString(R.string.last_opened, LastOpened.describe(this, when));
-                w = Math.max(w, 4 * density + heroMeta.getPaint().measureText(meta));
-            }
-            w = Math.max(w, 4 * density + heroDots.getWidth());
-        }
-        if (hackerSkin) w += 6 * density + heroCursor.getPaint().measureText("▌");
-        return hero.getLeft() + w;
+    private void placeNowPlaying() {
+        TextView date = findViewById(R.id.date);
+        View bar = findViewById(R.id.nowPlaying);
+        android.text.Layout layout = date.getLayout();
+        if (layout == null || bar.getVisibility() == View.GONE) return;
+        float text = 0;
+        for (int i = 0; i < layout.getLineCount(); i++) text = Math.max(text, layout.getLineRight(i));
+        int[] d = new int[2], p = new int[2];
+        date.getLocationInWindow(d);
+        ((View) bar.getParent()).getLocationInWindow(p);
+        int start = Math.round(d[0] - p[0] + date.getCompoundPaddingLeft() + text + 28 * density);
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) bar.getLayoutParams();
+        if (lp.getMarginStart() == start) return;
+        lp.setMarginStart(start);
+        bar.setLayoutParams(lp);
     }
 
     /** The shelf's text for this dock app: its name and, on the cinematic shelf, "Last opened" and the dots. */
@@ -1783,7 +1796,6 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
      * name above the dock does not show (every grid tile has its name underneath).
      */
     private void showGlowOnly(int position) {
-        nowPlaying.hide();
         int color = adapter.ambientColorAt(position);
         stopAmbientAnimation();
         hero.animate().cancel();
@@ -1810,7 +1822,6 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     private void hideHero() {
-        nowPlaying.hide();
         if (!heroShown) return;
         stopAmbientAnimation();
         hero.animate().cancel();
@@ -2048,8 +2059,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             return GridNavigation.atHorizontalEdge(position - COLUMNS, count - COLUMNS, GRID_COLUMNS, rtlAppGrid, left);
         }
         if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-            // dock row: the player card if it is on screen, otherwise let focus move to the top bar
-            if (position < COLUMNS) return nowPlaying.focus();
+            if (position < COLUMNS) return false;          // dock row: let focus move to the top bar
             target = above(position);
             if (target < COLUMNS) target = Math.max(0, Math.min(target, adapter.dockFilled() - 1));
         } else {
